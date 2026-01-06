@@ -7,16 +7,16 @@ import com.pedropathing.paths.PathChain;
 import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
-import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.Teleop.Intake;
 import org.firstinspires.ftc.teamcode.Teleop.MovementSystem;
 import org.firstinspires.ftc.teamcode.Teleop.Shooter;
 import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
-@Autonomous (name = "RedAuto")
-public class SixAutoBlue extends OpMode{
+@Autonomous (name = "AutoRedThree")
+public class simplePedroAutoRed extends OpMode {
     private Follower follower;
+
     private OpMode op;
     private Timer pathTimer, opModeTimer;
     private Boolean isShooting;
