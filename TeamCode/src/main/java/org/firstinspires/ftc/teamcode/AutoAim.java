@@ -40,9 +40,9 @@ public class AutoAim {
     public static boolean refindGoalAttempted = true;
 
     static final private double turnMultiplier = 2.5;
-    static final private double launchMultiplier = 6;
-    static final private double launchOffset = 850;
-    static final private double closeBoundary = 1;
+    static final private double launchMultiplier = 6.8;
+    static final private double launchOffset = 756.68282;
+    static final private double closeBoundary = 2;
     static final private double turnPower = 1;
 
 
@@ -73,7 +73,7 @@ public class AutoAim {
 
         targetLaunchVelocity = ((launchMultiplier * currentGoalRange) + launchOffset);
 
-        op.telemetry.addData("Launch Speed", targetLaunchVelocity);
+        op.telemetry.addData("Auto Launch Speed", targetLaunchVelocity);
 
         op.telemetry.addData("Target locked", targetLocked);
     }
@@ -186,6 +186,8 @@ public class AutoAim {
                     currentGoalTag = detection.id;
                     currentGoalElevation = detection.ftcPose.elevation;
                     currentGoalRange = detection.ftcPose.range;
+
+                    op.telemetry.addData("Goal Distance", currentGoalRange);
                 }
             } else {
                 //op.telemetry.addLine(String.format("\n==== (ID %d) Unknown", detection.id));
@@ -211,13 +213,13 @@ public class AutoAim {
 
         rotateDuration = (Math.abs(currentGoalElevation) / turnPower) * turnMultiplier;
 
-        if(((currentGoalElevation > closeBoundary - 1) || currentGoalElevation < -closeBoundary - 1) && !noTagDetected){
+        if((currentGoalElevation != -1) && !noTagDetected){
             if (currentGoalElevation > 0) {
                 Shooter.turretRotator.setPower(-turnPower);
             } else {
                 Shooter.turretRotator.setPower(turnPower);
             }
-            Thread.sleep((long) rotateDuration + 1);
+            Thread.sleep((long) rotateDuration);
             Shooter.turretRotator.setPower(0);
 
             refindGoalAttempted = false;
@@ -230,7 +232,7 @@ public class AutoAim {
             Shooter.turretRotator.setPower(0);
         }
 
-        targetLocked = currentGoalElevation < closeBoundary - 1.5 && currentGoalElevation > -closeBoundary - 0.5 && !noTagDetected;
+        targetLocked = currentGoalElevation < closeBoundary && currentGoalElevation > -closeBoundary && !noTagDetected;
 
         if (targetLocked) {
             indicatorLight.setPosition(0.500);

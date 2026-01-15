@@ -40,7 +40,7 @@ public class Shooter {
 
     public static boolean autoAimEnabled;
 
-    public static void init(OpMode OP){
+    public static void init(OpMode OP) {
         op = OP;
 
         leftShooter = op.hardwareMap.get(DcMotorEx.class, "leftShooter");
@@ -64,32 +64,31 @@ public class Shooter {
     }
 
     public void loop() throws InterruptedException {
-        shooterConOne();
         shooterConTwo();
         rotateTurret();
     }
 
-    public void shooterConTwo(){
-        if (op.gamepad2.y){
+    public void shooterConTwo() {
+        if (op.gamepad2.y) {
             rightShooter.setVelocity(SPIN_UP_VELOCITY_LONGRANGE);
             leftShooter.setVelocity(SPIN_UP_VELOCITY_LONGRANGE);
-        }else if (op.gamepad2.b){
+        } else if (op.gamepad2.b) {
             rightShooter.setVelocity(SPIN_UP_VELOCITY_MEDIUMRANGE);
             leftShooter.setVelocity(SPIN_UP_VELOCITY_MEDIUMRANGE);
         } else if (op.gamepad2.a) {
             rightShooter.setVelocity(SPIN_UP_VELOCITY_SHORTRANGE);
             leftShooter.setVelocity(SPIN_UP_VELOCITY_SHORTRANGE);
-        }else if (op.gamepad2.left_bumper){
-            leftShooter.setVelocity(-SPIN_UP_VELOCITY_SHORTRANGE *0.5);
-            rightShooter.setVelocity(-SPIN_UP_VELOCITY_SHORTRANGE *0.5);
-        }else if (op.gamepad2.x){
+        } else if (op.gamepad2.left_bumper) {
+            leftShooter.setVelocity(-SPIN_UP_VELOCITY_SHORTRANGE * 0.5);
+            rightShooter.setVelocity(-SPIN_UP_VELOCITY_SHORTRANGE * 0.5);
+        } else if (op.gamepad2.x) {
             leftShooter.setVelocity(SPIN_UP_VELOCITY_XLRANGE);
             rightShooter.setVelocity(SPIN_UP_VELOCITY_XLRANGE);
-        }else if (op.gamepad2.dpad_up) {
+        } else if (op.gamepad2.dpad_up) {
             AutoAim.aimEnabled = true;
-        }else if (op.gamepad2.dpad_down) {
+        } else if (op.gamepad2.dpad_down) {
             AutoAim.aimEnabled = false;
-        }else if (op.gamepad2.dpad_right){
+        } else if (op.gamepad2.dpad_right) {
             AutoAim.launcherRequested = true;
         } else if (op.gamepad2.dpad_left) {
             AutoAim.launcherRequested = false;
@@ -101,40 +100,32 @@ public class Shooter {
 
     }
 
-    public void shooterConOne(){
-        if (op.gamepad1.dpad_left){
-            blocker.setPosition(0);
-        } else if (op.gamepad1.dpad_right){
-            blocker.setPosition(1);
-        }
-    }
-
-    public void rotateTurret(){
-        if (op.gamepad2.right_trigger > 0){
+    public void rotateTurret() {
+        if (op.gamepad2.right_trigger > 0) {
             turretRotator.setPower(TURRET_ROTATE_SPEED);
-        }else if (op.gamepad2.left_trigger > 0){
+        } else if (op.gamepad2.left_trigger > 0) {
             turretRotator.setPower(-TURRET_ROTATE_SPEED);
-        }else {
+        } else {
             turretRotator.setPower(0);
         }
     }
 
     public void shooterTesterConTwo() throws InterruptedException {
-        if (op.gamepad2.dpadUpWasPressed()){
+        if (op.gamepad2.dpadUpWasPressed()) {
             TESTVELOCITY += LARGE_INCREMENT;
-        } else if (op.gamepad2.dpadDownWasPressed()){
+        } else if (op.gamepad2.dpadDownWasPressed()) {
             TESTVELOCITY -= LARGE_INCREMENT;
-        } else if (op.gamepad2.dpadLeftWasPressed()){
+        } else if (op.gamepad2.dpadLeftWasPressed()) {
             TESTVELOCITY -= SMALL_INCREMENT;
-        } else if (op.gamepad2.dpadRightWasPressed()){
+        } else if (op.gamepad2.dpadRightWasPressed()) {
             TESTVELOCITY += SMALL_INCREMENT;
-        } else if (op.gamepad2.right_bumper){
+        } else if (op.gamepad2.right_bumper) {
             rightShooter.setVelocity(TESTVELOCITY);
             leftShooter.setVelocity(TESTVELOCITY);
         } else if (op.gamepad2.left_bumper) {
             rightShooter.setVelocity(-TESTVELOCITY);
             leftShooter.setVelocity(-TESTVELOCITY);
-        }else {
+        } else {
             leftShooter.setVelocity(0);
             rightShooter.setVelocity(0);
         }
@@ -142,15 +133,8 @@ public class Shooter {
         op.telemetry.addLine("Spin Power Left: " + leftShooter.getVelocity() + " \nSpin Power Right: " + leftShooter.getVelocity() + "\nWhat Power Should be: " + TESTVELOCITY);
     }
 
-    public static void setShooterPower(double Vel){
+    public static void setShooterPower(double Vel) {
         leftShooter.setVelocity(Vel);
         rightShooter.setVelocity(Vel);
     }
-
-
-    /*if (op.gamepad2.a){
-            Main.autoAim.launcherRequested = true;
-        } else {
-            Main.autoAim.launcherRequested = false;
-        }*/
 }

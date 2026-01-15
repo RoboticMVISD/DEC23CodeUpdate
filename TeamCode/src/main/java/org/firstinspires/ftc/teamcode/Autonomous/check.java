@@ -8,6 +8,7 @@ import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
+import org.firstinspires.ftc.onbotjava.handlers.file.TemplateFile;
 import org.firstinspires.ftc.teamcode.AutoAim;
 import org.firstinspires.ftc.teamcode.Teleop.Intake;
 import org.firstinspires.ftc.teamcode.Teleop.MovementSystem;
@@ -16,15 +17,21 @@ import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
 
 //TIMES:
-@Autonomous (name = "RedMainTest")
-public class mainAutoTest extends OpMode{
+@Autonomous (name = "check ")
+public class check extends OpMode{
 
     /*
     How this auto will work code wise is that it will have three separate methods which hold case statements.
     This is to symbolize the stages of the auto and what each stage completes/does.
      */
     private Follower follower;
-    private int stageNum;
+    private Boolean isShooting;
+    private Boolean stageOneBusy;
+
+
+    private double timeToCompleteStageOne = 0;
+    private double timeToCompleteStageTwo = 0;
+    private double timeToCompleteStageThree = 0;
 
 
     //Enum For Shooting/Getting Preload and First Row of Balls. As well as all the variables used for it
@@ -33,8 +40,7 @@ public class mainAutoTest extends OpMode{
         SHOOT_PRELOAD,
         DRIVE_1ST_ROW_POS,
         DRIVE_RESET_MID_ONE,
-        SHOOT_FIRST_ROW,
-        MOVE_ON;
+        SHOOT_FIRST_ROW;
 
     }
     private PathStateOne pathStateOne;
@@ -43,7 +49,6 @@ public class mainAutoTest extends OpMode{
     private final Pose rowOneStart = new Pose(102.820, 86.17972350230413, Math.toRadians(0));
     private final Pose rowOneEnd = new Pose(130, 86.17972350230413  , Math.toRadians(0));
     private PathChain shootFirstThree, getIntoRowOnePos, getFirstRow, resetBackOne;
-
 
 
 
@@ -109,7 +114,7 @@ public class mainAutoTest extends OpMode{
     }
 
     //Method/Switch statement for shooting preload and getting row one & shooting. WORKS
-    private void stageOne(){
+    private void pathStateUpdateOne(){
         switch (pathStateOne) {
             case DRIVE_GETTING_INTO_SHOOT_POS: //Works
                 follower.followPath(shootFirstThree, true);
@@ -139,20 +144,18 @@ public class mainAutoTest extends OpMode{
             case SHOOT_FIRST_ROW: //Works
                 if (!follower.isBusy() && pathTimer.getElapsedTimeSeconds() < 5){
                     shootFromMedium();
-                } else if (!follower.isBusy() && pathTimer.getElapsedTimeSeconds() > 5 && pathTimer.getElapsedTimeSeconds() < 5.3){
-                    turnOffSystems();
-                    telemetry.addData("Stage One Time: ", opModeTimer.getElapsedTimeSeconds());
+                } else {
+                    setTimeForCompletion(timeToCompleteStageOne);
+                    break;
                 }break;
-            case MOVE_ON:
-                if (!follower.isBusy()){
-                stageNum++;} break;
             default:
+                turnOffSystems();
                 break;
         }
     } // WORKS
 
     //Method/Case statement meant for the 2nd row of balls and shooting them
-    private void stageTwo(){
+    private void pathStateUpdateTwo(){
         switch(pathStateTwo){
             case DRIVE_2ND_ROW_POS:  //Works
                 if (!follower.isBusy()){
@@ -180,19 +183,19 @@ public class mainAutoTest extends OpMode{
             case SHOOT_SECOND_ROW:
                 if (!follower.isBusy() && pathTimer.getElapsedTimeSeconds() < 5){
                     shootFromMedium();
-                } else if (!follower.isBusy() && pathTimer.getElapsedTimeSeconds() > 5 && pathTimer.getElapsedTimeSeconds() < 5.3){
+                } else if (!follower.isBusy() && pathTimer.getElapsedTimeSeconds() > 5){
                     turnOffSystems();
-                    stageNum++;
-                    telemetry.addData("Stage Two Time: ", opModeTimer.getElapsedTimeSeconds());
-
+                    pathStateUpdateThree();
+                    setTimeForCompletion(timeToCompleteStageTwo);
                 } break;
             default:
+                turnOffSystems();
                 break;
         }
     } // WORKS
 
     //The last method that grabs the last row, shoots and parks in the middle. WORKS
-    private void stageThree(){
+    private void pathStateUpdateThree(){
         switch (pathStateThree){
             case DRIVE_3RD_ROW_POS:
                 if (!follower.isBusy()){
@@ -223,10 +226,10 @@ public class mainAutoTest extends OpMode{
                 }
             case DRIVE_PARK:
                 telemetry.addLine("All Paths Done");
-                telemetry.addData("Stage Three Time: ", opModeTimer.getElapsedTimeSeconds());
-                turnOffSystems();
+                setTimeForCompletion(timeToCompleteStageThree);
                 break;
             default:
+                turnOffSystems();
                 break;
         }
     } //WORKS
@@ -247,42 +250,38 @@ public class mainAutoTest extends OpMode{
         pathTimer.resetTimer();
     }
     private void shootFromMedium() {
-        AutoAim.aimEnabled = true;
-
         Shooter.setShooterPower(Shooter.SPIN_UP_VELOCITY_MEDIUMRANGE - 50);
-
-        if ((Shooter.rightShooter.getVelocity() >= (Shooter.SPIN_UP_VELOCITY_MEDIUMRANGE-50) - 20 && Shooter.rightShooter.getVelocity() <= (Shooter.SPIN_UP_VELOCITY_MEDIUMRANGE-50)  + 20) && pathTimer.getElapsedTimeSeconds() < 4.8) {
-            Intake.setBothIntakePower(1);
-        } else {
-            AutoAim.aimEnabled = false;
-            Intake.setBothIntakePower(0);
-        }
     }
     private void turnOffSystems() {
         Shooter.setShooterPower(0);
         Intake.setBothIntakePower(0);
     }
 
+    private void setTimeForCompletion(double timeForCompletionHolder){
+        timeForCompletionHolder = opModeTimer.getElapsedTimeSeconds();
+    }
     public void intakeBalls(Timer time){
         Intake.intake.setPower(1);
     }
+
+
+
+
 
     public void init() {
         pathStateOne = PathStateOne.DRIVE_GETTING_INTO_SHOOT_POS;
         pathStateTwo = PathStateTwo.DRIVE_2ND_ROW_POS;
         pathStateThree = PathStateThree.DRIVE_3RD_ROW_POS;
-
         pathTimer = new Timer();
         opModeTimer = new Timer();
-
-        stageNum = 1;
-
+        isShooting = false;
         follower = Constants.createFollower(hardwareMap);
-
         Intake.init(this);
         Shooter.init(this);
         MovementSystem.init(this);
         AutoAim.init(this);
+        AutoAim.launcherRequested = false;
+        AutoAim.aimEnabled = false;
 
         buildPaths();
         follower.setPose(startPose);
@@ -294,25 +293,26 @@ public class mainAutoTest extends OpMode{
 
     public void loop(){
         follower.update();
-        switchCases(stageNum);
+        timerStages(opModeTimer);
         telemetry.addData("Path State: ", pathStateOne.toString());
         telemetry.addData("Path Time: ", pathTimer.getElapsedTimeSeconds());
         telemetry.addData("Total Time: ", opModeTimer.getElapsedTimeSeconds());
-        telemetry.addData("Is AutoAim on? ", AutoAim.aimEnabled);
+        telemetry.addData("Phase One Completion Time: ", timeToCompleteStageOne);
+        telemetry.addData("Phase Two Completion Time: ", timeToCompleteStageTwo);
+        telemetry.addData("Phase Three Completion Time: ", timeToCompleteStageThree);
 
         AutoAim.loop();
     }
 
-    public void switchCases(int stage){
-        switch (stage){
-            case 1:
-                stageOne();
-            case 2:
-                stageTwo();
-            case 3:
-                stageThree();
-            default:
-                break;
+    public void timerStages(Timer time){
+        if (opModeTimer.getElapsedTimeSeconds() < 11){
+            pathStateUpdateOne();
+        }else if (opModeTimer.getElapsedTimeSeconds() > 11 && opModeTimer.getElapsedTimeSeconds() < 19){
+            pathStateUpdateTwo();
+        }else if (opModeTimer.getElapsedTimeSeconds() > 19 && opModeTimer.getElapsedTimeSeconds() < 28){
+            pathStateUpdateThree();
+        }else {
+            turnOffSystems();
         }
     }
 

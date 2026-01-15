@@ -8,7 +8,6 @@ import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
-import org.firstinspires.ftc.onbotjava.handlers.file.TemplateFile;
 import org.firstinspires.ftc.teamcode.AutoAim;
 import org.firstinspires.ftc.teamcode.Teleop.Intake;
 import org.firstinspires.ftc.teamcode.Teleop.MovementSystem;
@@ -29,11 +28,6 @@ public class RedAutoMainClose extends OpMode{
     private Boolean stageOneBusy;
 
 
-    private double timeToCompleteStageOne = 0;
-    private double timeToCompleteStageTwo = 0;
-    private double timeToCompleteStageThree = 0;
-
-
     //Enum For Shooting/Getting Preload and First Row of Balls. As well as all the variables used for it
     private enum PathStateOne {
         DRIVE_GETTING_INTO_SHOOT_POS,
@@ -46,8 +40,9 @@ public class RedAutoMainClose extends OpMode{
     private PathStateOne pathStateOne;
     private final Pose startPose = new Pose(128.073732718894, 111.92626728110596, Math.toRadians(0));
     private final Pose shootPose = new Pose(102.230, 101.032, Math.toRadians(0));
-    private final Pose rowOneStart = new Pose(102.820, 86.17972350230413, Math.toRadians(0));
-    private final Pose rowOneEnd = new Pose(130, 86.17972350230413  , Math.toRadians(0));
+    private final Pose rowOneStart = new Pose(102.820, 84.17972350230413, Math.toRadians(0));
+    private final Pose rowOneEnd = new Pose(129.5, 84.17972350230413  , Math.toRadians(0));
+    private final Pose turretFacingPose = new Pose(130.5069124423963, 136.03686635944703);
     private PathChain shootFirstThree, getIntoRowOnePos, getFirstRow, resetBackOne;
 
 
@@ -61,8 +56,8 @@ public class RedAutoMainClose extends OpMode{
         SHOOT_SECOND_ROW
     }
     private PathStateTwo pathStateTwo;
-    private final Pose rowTwoStart = new Pose(99.76036866359446, 56.866359447004605, Math.toRadians(0));
-    private final Pose rowTwoEnd = new Pose(133.04608294930875, 56.39631336405527, Math.toRadians(0));
+    private final Pose rowTwoStart = new Pose(99.76036866359446, 54.866359447004605, Math.toRadians(0));
+    private final Pose rowTwoEnd = new Pose(133.04608294930875, 54.39631336405527, Math.toRadians(0));
     private  PathChain getIntoRowTwo, getRowTwo, resetBackTwo;
 
 
@@ -78,7 +73,7 @@ public class RedAutoMainClose extends OpMode{
     }
     private PathStateThree pathStateThree;
     private final Pose rowThreeStart = new Pose(99.76036866359446, 36.5529953917, Math.toRadians(0));
-    private final Pose rowThreeEnd = new Pose(133.04608294930875, 38.5529953917, Math.toRadians(0));
+    private final Pose rowThreeEnd = new Pose(133.04608294930875, 36.5529953917, Math.toRadians(0));
     private final Pose parkPose = new Pose(94.72089761570828, 63.82047685834502, Math.toRadians(270));
     private PathChain getIntoRowThree, getRowThree, backUpRowTwo,resetBackThree, park;
 
@@ -92,6 +87,14 @@ public class RedAutoMainClose extends OpMode{
                 .setLinearHeadingInterpolation(start.getHeading(), end.getHeading())
                 .build();
         return path;
+    }
+
+    private PathChain newPathLine(Pose start, Pose end, Boolean isTangential){
+            PathChain path = follower.pathBuilder()
+                    .addPath(new BezierLine(start, end))
+                    .setTangentHeadingInterpolation()
+                    .build();
+            return path;
     }
     private void buildPaths(){
         //For Preload and Row One
@@ -144,10 +147,8 @@ public class RedAutoMainClose extends OpMode{
                 case SHOOT_FIRST_ROW: //Works
                     if (!follower.isBusy() && pathTimer.getElapsedTimeSeconds() < 5){
                         shootFromMedium();
-                    } else {
-                       setTimeForCompletion(timeToCompleteStageOne);
-                       break;
-                    }break;
+                    }
+                    break;
                 default:
                     turnOffSystems();
                     break;
@@ -186,7 +187,6 @@ public class RedAutoMainClose extends OpMode{
                 } else if (!follower.isBusy() && pathTimer.getElapsedTimeSeconds() > 5){
                     turnOffSystems();
                     pathStateUpdateThree();
-                    setTimeForCompletion(timeToCompleteStageTwo);
                 } break;
             default:
                 turnOffSystems();
@@ -226,7 +226,6 @@ public class RedAutoMainClose extends OpMode{
                 }
             case DRIVE_PARK:
                 telemetry.addLine("All Paths Done");
-                setTimeForCompletion(timeToCompleteStageThree);
                 break;
             default:
                 turnOffSystems();
@@ -250,7 +249,11 @@ public class RedAutoMainClose extends OpMode{
         pathTimer.resetTimer();
     }
     private void shootFromMedium() {
-        Shooter.setShooterPower(Shooter.SPIN_UP_VELOCITY_MEDIUMRANGE - 50);
+        Shooter.setShooterPower(Shooter.SPIN_UP_VELOCITY_MEDIUMRANGE);
+
+        if (Shooter.leftShooter.getVelocity() > Shooter.SPIN_UP_VELOCITY_MEDIUMRANGE - 20 && Shooter.leftShooter.getVelocity() < Shooter.SPIN_UP_VELOCITY_MEDIUMRANGE - 20){
+            Intake.setBothIntakePower(1);
+        }
     }
     private void turnOffSystems() {
         Shooter.setShooterPower(0);
@@ -279,10 +282,10 @@ public class RedAutoMainClose extends OpMode{
         Intake.init(this);
         Shooter.init(this);
         MovementSystem.init(this);
-        AutoAim.init(this);
+       /* AutoAim.init(this);
         AutoAim.launcherRequested = false;
         AutoAim.aimEnabled = false;
-
+*/
         buildPaths();
         follower.setPose(startPose);
     }
@@ -297,11 +300,6 @@ public class RedAutoMainClose extends OpMode{
         telemetry.addData("Path State: ", pathStateOne.toString());
         telemetry.addData("Path Time: ", pathTimer.getElapsedTimeSeconds());
         telemetry.addData("Total Time: ", opModeTimer.getElapsedTimeSeconds());
-        telemetry.addData("Phase One Completion Time: ", timeToCompleteStageOne);
-        telemetry.addData("Phase Two Completion Time: ", timeToCompleteStageTwo);
-        telemetry.addData("Phase Three Completion Time: ", timeToCompleteStageThree);
-
-        AutoAim.loop();
     }
 
     public void timerStages(Timer time){
