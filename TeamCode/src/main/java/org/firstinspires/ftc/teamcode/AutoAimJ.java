@@ -75,7 +75,7 @@ public class AutoAimJ {
         displayDetectionTelemetry(id20);
 
         autoAim();
-        manageLight();
+        manageIndicatorLight();
     }
     public void stop(){
         if (portal != null) {
@@ -95,7 +95,7 @@ public class AutoAimJ {
             }
         }
     }
-    public void manageLight(){
+    public void manageIndicatorLight(){
         if (targetLocked){
             indicatorLight.setPosition(.5);
         } else {
@@ -156,7 +156,7 @@ public class AutoAimJ {
 
     public AprilTagDetection getTagInfo(){
         for (AprilTagDetection detection : detectedTags){
-            bearing = detection.ftcPose.bearing;
+            bearing = detection.ftcPose.elevation;
             yaw = detection.ftcPose.yaw;
             range = detection.ftcPose.range;
         }
