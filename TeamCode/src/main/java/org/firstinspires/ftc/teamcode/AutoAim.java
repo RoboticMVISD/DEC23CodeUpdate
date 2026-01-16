@@ -163,7 +163,7 @@ public class AutoAim {
         // Disable or re-enable the aprilTag processor at any time.
         sigmaVisionPortal.setProcessorEnabled(sigmaAprilTag, true);
 
-    }
+    } //Integrated
     private static void telemetryAprilTag() {
 
         List<AprilTagDetection> currentDetections = sigmaAprilTag.getDetections();

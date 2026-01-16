@@ -9,6 +9,7 @@ import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.AutoAim;
+import org.firstinspires.ftc.teamcode.AutoAimJ;
 import org.firstinspires.ftc.teamcode.Teleop.Main;
 
 public class Shooter {
@@ -85,13 +86,13 @@ public class Shooter {
             leftShooter.setVelocity(SPIN_UP_VELOCITY_XLRANGE);
             rightShooter.setVelocity(SPIN_UP_VELOCITY_XLRANGE);
         } else if (op.gamepad2.dpad_up) {
-            AutoAim.aimEnabled = true;
+            AutoAimJ.autoAimRequested = true;
         } else if (op.gamepad2.dpad_down) {
-            AutoAim.aimEnabled = false;
+            AutoAimJ.autoAimRequested = false;
         } else if (op.gamepad2.dpad_right) {
-            AutoAim.launcherRequested = true;
+            AutoAimJ.autoDistancingRequested = true;
         } else if (op.gamepad2.dpad_left) {
-            AutoAim.launcherRequested = false;
+            AutoAimJ.autoDistancingRequested = false;
         } else {
             rightShooter.setPower(0);
             leftShooter.setPower(0);
