@@ -8,7 +8,6 @@ import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
-import org.firstinspires.ftc.onbotjava.handlers.file.TemplateFile;
 import org.firstinspires.ftc.teamcode.AutoAim;
 import org.firstinspires.ftc.teamcode.Teleop.Intake;
 import org.firstinspires.ftc.teamcode.Teleop.MovementSystem;
@@ -17,8 +16,8 @@ import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
 
 //TIMES:
-@Autonomous (name = "check ")
-public class check extends OpMode{
+@Autonomous (name = "BlueAutoMain12B")
+public class BlueAutoMainClose extends OpMode{
 
     /*
     How this auto will work code wise is that it will have three separate methods which hold case statements.
@@ -27,11 +26,6 @@ public class check extends OpMode{
     private Follower follower;
     private Boolean isShooting;
     private Boolean stageOneBusy;
-
-
-    private double timeToCompleteStageOne = 0;
-    private double timeToCompleteStageTwo = 0;
-    private double timeToCompleteStageThree = 0;
 
 
     //Enum For Shooting/Getting Preload and First Row of Balls. As well as all the variables used for it
@@ -44,10 +38,10 @@ public class check extends OpMode{
 
     }
     private PathStateOne pathStateOne;
-    private final Pose startPose = new Pose(128.073732718894, 111.92626728110596, Math.toRadians(0));
-    private final Pose shootPose = new Pose(102.230, 101.032, Math.toRadians(0));
-    private final Pose rowOneStart = new Pose(102.820, 86.17972350230413, Math.toRadians(0));
-    private final Pose rowOneEnd = new Pose(130, 86.17972350230413  , Math.toRadians(0));
+    private final Pose startPose = new Pose(15.926, 111.926, Math.toRadians(90));
+    private final Pose shootPose = new Pose(41.77, 101.032, Math.toRadians(90));
+    private final Pose rowOneStart = new Pose(41.18, 84.180, Math.toRadians(90));
+    private final Pose rowOneEnd = new Pose(14.5, 84.180  , Math.toRadians(90));
     private PathChain shootFirstThree, getIntoRowOnePos, getFirstRow, resetBackOne;
 
 
@@ -61,8 +55,8 @@ public class check extends OpMode{
         SHOOT_SECOND_ROW
     }
     private PathStateTwo pathStateTwo;
-    private final Pose rowTwoStart = new Pose(99.76036866359446, 56.866359447004605, Math.toRadians(0));
-    private final Pose rowTwoEnd = new Pose(133.04608294930875, 56.39631336405527, Math.toRadians(0));
+    private final Pose rowTwoStart = new Pose(44.24, 54.866, Math.toRadians(90));
+    private final Pose rowTwoEnd = new Pose(10.954, 54.396, Math.toRadians(90));
     private  PathChain getIntoRowTwo, getRowTwo, resetBackTwo;
 
 
@@ -77,9 +71,9 @@ public class check extends OpMode{
         DRIVE_PARK
     }
     private PathStateThree pathStateThree;
-    private final Pose rowThreeStart = new Pose(99.76036866359446, 36.5529953917, Math.toRadians(0));
-    private final Pose rowThreeEnd = new Pose(133.04608294930875, 38.5529953917, Math.toRadians(0));
-    private final Pose parkPose = new Pose(94.72089761570828, 63.82047685834502, Math.toRadians(270));
+    private final Pose rowThreeStart = new Pose(44.24, 36.553, Math.toRadians(90));
+    private final Pose rowThreeEnd = new Pose(10.954, 36.553, Math.toRadians(90));
+    private final Pose parkPose = new Pose(49.279, 63.820, Math.toRadians(270));
     private PathChain getIntoRowThree, getRowThree, backUpRowTwo,resetBackThree, park;
 
     private Timer pathTimer, opModeTimer;
@@ -90,6 +84,14 @@ public class check extends OpMode{
         PathChain path = follower.pathBuilder()
                 .addPath(new BezierLine(start, end))
                 .setLinearHeadingInterpolation(start.getHeading(), end.getHeading())
+                .build();
+        return path;
+    }
+
+    private PathChain newPathLine(Pose start, Pose end, Boolean isTangential){
+        PathChain path = follower.pathBuilder()
+                .addPath(new BezierLine(start, end))
+                .setTangentHeadingInterpolation()
                 .build();
         return path;
     }
@@ -144,10 +146,8 @@ public class check extends OpMode{
             case SHOOT_FIRST_ROW: //Works
                 if (!follower.isBusy() && pathTimer.getElapsedTimeSeconds() < 5){
                     shootFromMedium();
-                } else {
-                    setTimeForCompletion(timeToCompleteStageOne);
-                    break;
-                }break;
+                }
+                break;
             default:
                 turnOffSystems();
                 break;
@@ -186,7 +186,6 @@ public class check extends OpMode{
                 } else if (!follower.isBusy() && pathTimer.getElapsedTimeSeconds() > 5){
                     turnOffSystems();
                     pathStateUpdateThree();
-                    setTimeForCompletion(timeToCompleteStageTwo);
                 } break;
             default:
                 turnOffSystems();
@@ -226,7 +225,6 @@ public class check extends OpMode{
                 }
             case DRIVE_PARK:
                 telemetry.addLine("All Paths Done");
-                setTimeForCompletion(timeToCompleteStageThree);
                 break;
             default:
                 turnOffSystems();
@@ -250,7 +248,11 @@ public class check extends OpMode{
         pathTimer.resetTimer();
     }
     private void shootFromMedium() {
-        Shooter.setShooterPower(Shooter.SPIN_UP_VELOCITY_MEDIUMRANGE - 50);
+        Shooter.setShooterPower(Shooter.SPIN_UP_VELOCITY_MEDIUMRANGE);
+
+        if (Shooter.leftShooter.getVelocity() > Shooter.SPIN_UP_VELOCITY_MEDIUMRANGE - 20 && Shooter.leftShooter.getVelocity() < Shooter.SPIN_UP_VELOCITY_MEDIUMRANGE - 20){
+            Intake.setBothIntakePower(1);
+        }
     }
     private void turnOffSystems() {
         Shooter.setShooterPower(0);
@@ -279,9 +281,6 @@ public class check extends OpMode{
         Intake.init(this);
         Shooter.init(this);
         MovementSystem.init(this);
-        AutoAim.init(this);
-        AutoAim.launcherRequested = false;
-        AutoAim.aimEnabled = false;
 
         buildPaths();
         follower.setPose(startPose);
@@ -297,11 +296,6 @@ public class check extends OpMode{
         telemetry.addData("Path State: ", pathStateOne.toString());
         telemetry.addData("Path Time: ", pathTimer.getElapsedTimeSeconds());
         telemetry.addData("Total Time: ", opModeTimer.getElapsedTimeSeconds());
-        telemetry.addData("Phase One Completion Time: ", timeToCompleteStageOne);
-        telemetry.addData("Phase Two Completion Time: ", timeToCompleteStageTwo);
-        telemetry.addData("Phase Three Completion Time: ", timeToCompleteStageThree);
-
-        AutoAim.loop();
     }
 
     public void timerStages(Timer time){

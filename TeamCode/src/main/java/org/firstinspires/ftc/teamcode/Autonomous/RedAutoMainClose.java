@@ -16,7 +16,7 @@ import org.firstinspires.ftc.teamcode.pedroPathing.Constants;
 
 
 //TIMES:
-@Autonomous (name = "RedAutoMain")
+@Autonomous (name = "RedAutoMain12B")
 public class RedAutoMainClose extends OpMode{
 
     /*
@@ -42,7 +42,6 @@ public class RedAutoMainClose extends OpMode{
     private final Pose shootPose = new Pose(102.230, 101.032, Math.toRadians(0));
     private final Pose rowOneStart = new Pose(102.820, 84.17972350230413, Math.toRadians(0));
     private final Pose rowOneEnd = new Pose(129.5, 84.17972350230413  , Math.toRadians(0));
-    private final Pose turretFacingPose = new Pose(130.5069124423963, 136.03686635944703);
     private PathChain shootFirstThree, getIntoRowOnePos, getFirstRow, resetBackOne;
 
 
@@ -282,10 +281,7 @@ public class RedAutoMainClose extends OpMode{
         Intake.init(this);
         Shooter.init(this);
         MovementSystem.init(this);
-       /* AutoAim.init(this);
-        AutoAim.launcherRequested = false;
-        AutoAim.aimEnabled = false;
-*/
+
         buildPaths();
         follower.setPose(startPose);
     }

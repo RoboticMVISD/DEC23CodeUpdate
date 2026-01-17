@@ -40,7 +40,7 @@ public class AutoAim {
     public static boolean refindGoalAttempted = true;
 
     static final private double turnMultiplier = 2.5;
-    static final private double launchMultiplier = 6.8;
+    static final private double launchMultiplier = 7.15;
     static final private double launchOffset = 756.68282;
     static final private double closeBoundary = 2;
     static final private double turnPower = 1;
@@ -59,6 +59,9 @@ public class AutoAim {
 
         op.telemetry.addData("DS preview on/off", "3 dots, Camera Stream");
         op.telemetry.addData(">", "Touch START to start OpMode");
+
+        aimEnabled = false;
+        launcherRequested = false;
     }
 
     public static void loop() {

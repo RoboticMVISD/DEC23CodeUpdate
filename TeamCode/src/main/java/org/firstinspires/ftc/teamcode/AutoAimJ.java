@@ -4,6 +4,7 @@ import android.util.Size;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
@@ -36,18 +37,12 @@ public class AutoAimJ {
     double yaw;
     double range;
 
-    double minimumBoundryClose = -7;
-    double maximumBoundryClose = -5;
+    double kP = 0.02;
+    double kD = 0;
 
-    double minBoundryFar = -6.5;
-    double maxBoundryFar = -5.5;
+    double lastError = 0;
+    ElapsedTime timer;
 
-    double SPEED_GAIN = .35;
-    double turnPower;
-    AprilTagDetection lastDetection;
-    double lastElevation;
-    double lastRange;
-    double lastYaw;
 
 
     //Range for point of big circle is 73, 88 for the farthest point from marker
@@ -79,6 +74,13 @@ public class AutoAimJ {
         builder.setAutoStopLiveView(false);
         builder.addProcessors(processor);
         portal = builder.build();
+
+        timer = new ElapsedTime();
+    }
+
+    public void start(){
+        timer.reset();
+        timer.startTime();
     }
 
     public void loop(){
@@ -88,14 +90,17 @@ public class AutoAimJ {
         autoDistancing();
         autoAim();
         manageIndicatorLight();
-        conTwoAutoAimAndDistanceControls();
+        testPIDforCamera();
 
         telemetry.addData("Current Launch MULTI: ", launchMultiplier);
+        telemetry.addData("Current Propotional: ", kP);
+        telemetry.addData("Current Derivative: ", kP);
         telemetry.addData("Auto Aim? ", autoAimRequested);
         telemetry.addData("Auto Distance?", autoDistancingRequested);
         telemetry.addData("Current Target Power: ", targetLaunchVelocity);
         telemetry.addData("Elevation ",elevation );
         telemetry.addData("Range", range);
+        telemetry.addData("Yaw", yaw);
         telemetry.addData("Any Detections?: ", detectedTags.isEmpty());
     }
     public void stop(){
@@ -104,33 +109,40 @@ public class AutoAimJ {
         }}
 
     public void autoAim(){
-        if (autoAimRequested && !detectedTags.isEmpty()) {
-            turnPower = elevation * SPEED_GAIN;
-            Shooter.turretRotator.setPower(-turnPower);
+        if (autoAimRequested && !detectedTags.isEmpty()){
+            double error = yaw;
 
-            if (range < 90){
-            if (elevation >= minimumBoundryClose && elevation <= maximumBoundryClose){
-                Shooter.turretRotator.setPower(0);
-                targetLocked = true;
-            } else {
-                targetLocked = false;
-            }} else {
-                if (elevation >= minBoundryFar && elevation <= maxBoundryFar){
-                    Shooter.turretRotator.setPower(0);
-                    targetLocked = true;
-                } else {
-                    targetLocked = false;
-                }
+            double dt = timer.seconds();
+            timer.reset();
+
+            double derivative = (error - lastError) / dt;
+            lastError = error;
+
+            double power = kP * error + kD * derivative;
+
+            if (Math.abs(error) < 0.5) {
+                power = 0;
             }
+
             /*
-            else if (autoAimRequested && detectedTags.isEmpty()){
-            if (elevation < lastElevation){
-                Shooter.turretRotator.setPower(.5);
-            } else if (elevation > lastElevation){
-                Shooter.turretRotator.setPower(-.5);
-            }
-        }
+                    Test kP with a test method.
+        | ------------------------- | ------------ |
+        | Moves very slowly         | kP too small |
+        | Smooth, slows near center | 👍 Good      |
+        | Oscillates left/right     | kP too big   |
+
+        When Kp is done, set kD to 0.004 and test for:
+
+            Reduce overshoot
+            Remove shaking
+            Make it “snap” into place smoothly
+
+            If it overshoots → lower kP or raise kD
+            If it’s sluggish → raise kP
+            If it jitters → add deadband or raise kD
              */
+            power = Math.max(-0.35, Math.min(0.35, power));
+            Shooter.turretRotator.setPower(power);
         }
     }
     public void autoDistancing(){
@@ -225,9 +237,9 @@ public class AutoAimJ {
 
     public void testPIDforCamera(){
        if (op.gamepad2.dpadLeftWasPressed()){
-           SPEED_GAIN -= .01;
+           kP -= .001;
        } else if (op.gamepad2.dpadRightWasPressed()){
-           SPEED_GAIN += .01;
+           kP += .001;
        }  else if (op.gamepad2.dpad_up) {
            autoAimRequested = true;
        } else if (op.gamepad2.dpad_down) {
