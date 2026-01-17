@@ -9,6 +9,7 @@ import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.AutoAim;
+import org.firstinspires.ftc.teamcode.AutoAimJ;
 import org.firstinspires.ftc.teamcode.Teleop.Main;
 
 public class Shooter {
@@ -29,7 +30,8 @@ public class Shooter {
     public static double SPIN_UP_VELOCITY_LONGRANGE = 1225;
     public static double SPIN_UP_VELOCITY_XLRANGE = 1550;
     public static double BALL_REVERSE_SPEED = -500;
-    double TURRET_ROTATE_SPEED = 0.4;
+    public static double TURRET_ROTATE_SPEED = 0.15;
+    public static double TURRET_ROTATE_SPEED_FAST = .4;
 
     //PIDF Variables
     public static double proportional = 300;
@@ -78,34 +80,34 @@ public class Shooter {
         } else if (op.gamepad2.a) {
             rightShooter.setVelocity(SPIN_UP_VELOCITY_SHORTRANGE);
             leftShooter.setVelocity(SPIN_UP_VELOCITY_SHORTRANGE);
-        } else if (op.gamepad2.left_bumper) {
+        } else if (op.gamepad2.x) {
             leftShooter.setVelocity(-SPIN_UP_VELOCITY_SHORTRANGE * 0.5);
             rightShooter.setVelocity(-SPIN_UP_VELOCITY_SHORTRANGE * 0.5);
-        } else if (op.gamepad2.x) {
-            leftShooter.setVelocity(SPIN_UP_VELOCITY_XLRANGE);
-            rightShooter.setVelocity(SPIN_UP_VELOCITY_XLRANGE);
-        } else if (op.gamepad2.dpad_up) {
-            AutoAim.aimEnabled = true;
-        } else if (op.gamepad2.dpad_down) {
-            AutoAim.aimEnabled = false;
-        } else if (op.gamepad2.dpad_right) {
-            AutoAim.launcherRequested = true;
-        } else if (op.gamepad2.dpad_left) {
-            AutoAim.launcherRequested = false;
         } else {
             rightShooter.setPower(0);
             leftShooter.setPower(0);
         }
+        /*
+        else if (op.gamepad2.dpad_right) {
+            AutoAimJ.autoDistancingRequested = true;
+        } else if (op.gamepad2.dpad_left) {
+            AutoAimJ.autoDistancingRequested = false;
+        }
+         */
 
 
     }
 
     public void rotateTurret() {
         if (op.gamepad2.right_trigger > 0) {
-            turretRotator.setPower(TURRET_ROTATE_SPEED);
+            turretRotator.setPower(TURRET_ROTATE_SPEED_FAST);
         } else if (op.gamepad2.left_trigger > 0) {
+            turretRotator.setPower(-TURRET_ROTATE_SPEED_FAST);
+        } else if (op.gamepad2.left_bumper){
             turretRotator.setPower(-TURRET_ROTATE_SPEED);
-        } else {
+        }else if (op.gamepad2.right_bumper){
+            turretRotator.setPower(TURRET_ROTATE_SPEED);
+        }else {
             turretRotator.setPower(0);
         }
     }

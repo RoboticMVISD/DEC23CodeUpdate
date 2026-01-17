@@ -224,6 +224,12 @@ public class AutoAim {
 
             refindGoalAttempted = false;
         } else if (noTagDetected && !refindGoalAttempted){
+            if (currentGoalElevation > 0) {
+                //bearingServo.setPower(turnPower);
+            } else {
+               //. bearingServo.setPower(-turnPower);
+            }
+            Thread.sleep(250);
 
             Shooter.turretRotator.setPower(0);
 
@@ -248,10 +254,4 @@ public class AutoAim {
 
 }
 
- /*if (currentGoalElevation > 0) {
-                bearingServo.setPower(turnPower);
-            } else {
-                bearingServo.setPower(-turnPower);
-            }
-;
-            Thread.sleep(250);*/
+ /**/
